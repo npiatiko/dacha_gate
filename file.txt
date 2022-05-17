@@ -57,6 +57,8 @@ Android.bp->Секция sanitize->Параметр address true/false
 
 According to my investigations, the issue is related to the non-call callback from the NMEA message processing thread.
 
-This issue is reproduced on the user build and cannot be reproduced on the userdebug build.
+This issue is rkjkjkeproduced on the user build and cannot be reproduced on the userdebug build.
 
-android.location.cts.GnssPseudorangeVerificationTest#testPseudoPosition fail
+android.location.cts.GnssPseudorangeVerificationTest#testPseudoPosiion fail
+
+

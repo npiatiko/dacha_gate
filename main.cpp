@@ -3,49 +3,56 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <termios.h>
+#include <stdlib.h>
+
 #define bufsize 255
 #define path "/dev/ttyUSB2"
-void init(int fd);
+#define command "at+clip=1\r\n"
+
+int init();
+void errExit (const char* errStr);
+
 int main(){
     int fd = -1;
     int ret = 0, wrote = 0;
     char buf[bufsize + 1];
-    const char command[] = "at+clip=1\r\n";
-    fd = open(path, O_RDWR);
-    if (fd < 0){
-        printf("Error open\n");
-        return 1;
-    }
-    init(fd);
+
+    fd = init();
     // printf(command);
     // printf ("sizeof(command): %zu\n", sizeof(command));
     wrote = write(fd, command, sizeof(command));
     // printf ("wrote: %d\n", wrote);
 
-    while ((ret = read(fd, buf, bufsize)) > 0 ){
+    while (ret = read(fd, buf, bufsize)){
         buf[ret] = '\0';
         printf("ret: %d string: %s", ret, buf);
     }    
+    printf ("exit\n");
 
     return 0;
 }
 
-void init(int fd){
+void errExit (const char* errStr){
+    printf("%s\n", errStr);
+    exit(EXIT_FAILURE);
+}
+
+int init(){
+    int fd = -1;
     struct termios tp, save;
 
-    // tcflush(fd,TCIOFLUSH);
-    if (tcgetattr(fd, &tp) < 0){
-        printf("Error tcgetattr\n");
-        _exit;
+    fd = open(path, O_RDWR);
+    if (fd < 0){
+        errExit("Error open");
     }
-    printf("tcgetattr SUCCESS\n");
-    save = tp;
+
     tp.c_lflag &= ~(ICANON | ISIG | IEXTEN | ECHO);
-    if (tcsetattr(fd, TCSAFLUSH, &tp) < 0){
-        printf("Error tcsetattr\n");
-        _exit;
+    if (tcsetattr(fd, TCSAFLUSH, &tp) == -1){
+        errExit("Error tcsetattr");
     }
+
     printf("tcsetattr SUCCESS\n");
 
     sleep(1);
+    return fd;
 }

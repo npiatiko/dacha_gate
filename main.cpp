@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <termios.h>
 #include <stdlib.h>
+#include <regex>
 
 #define bufsize 255
 #define path "/dev/ttyUSB2"
@@ -16,6 +17,8 @@ int main(){
     int fd = -1;
     int ret = 0, wrote = 0;
     char buf[bufsize + 1];
+    static const std::regex phone_regex("\\+CLIP: \"(\\+\\d{12})\",145,,,,0", std::regex::icase);
+    std::smatch match;
 
     fd = init();
     // printf(command);
@@ -25,7 +28,11 @@ int main(){
 
     while (ret = read(fd, buf, bufsize)){
         buf[ret] = '\0';
-        printf("ret: %d string: %s", ret, buf);
+        std::string inStr(buf);
+        if (std::regex_search(inStr, match, phone_regex)) {
+            printf("FOUND!!! match.size(): %d: %s\n", match.size(), match[0].str().c_str());
+        }
+        printf("ret: %d string: %s", ret, inStr.c_str());
     }    
     printf ("exit\n");
 

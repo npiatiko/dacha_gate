@@ -1,73 +1,36 @@
-#include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <stdio.h>
-#include <termios.h>
-#include <stdlib.h>
+#include <sys/stat.h>
+#include <ttyHandler.h>
+
 #include <regex>
 
-#define bufsize 255
-#define path "/dev/ttyUSB2"
-#define command "at+clip=1\r\n"
+#define hangup_cmd "AT+CHUP\r\n"
 
-int init();
-void errExit (const char* errStr);
+void errExit(const char* errStr);
 
-int main(){
-    int fd = -1;
-    int ret = 0, wrote = 0;
-    char buf[bufsize + 1];
+int main() {
     static const std::regex phone_regex("\\+CLIP: \"(\\+\\d{12})\",145,,,,0", std::regex::icase);
     std::smatch match;
+    ttyHandler& modem = ttyHandler::getModem();
+    std::string inStr;
 
-    fd = init();
-    // printf(command);
-    // printf ("sizeof(command): %zu\n", sizeof(command));
-    wrote = write(fd, command, sizeof(command));
-    // printf ("wrote: %d\n", wrote);
-
-    while (ret = read(fd, buf, bufsize)){
-        buf[ret] = '\0';
-        std::string inStr(buf);
+    while (modem.readData(inStr)) {
         if (std::regex_search(inStr, match, phone_regex)) {
-            printf("FOUND!!! match.size(): %d: %s\n", match.size(), match[0].str().c_str());
+            printf("FOUND!!! match.size(): %d: %s\nSleeping...\n", match.size(), match[0].str().c_str());
+            // write(fd, hangup_cmd, sizeof(hangup_cmd));
+            // sleep(10);
+            // printf("Resuming...\n");
+            // tcflush(fd, TCIOFLUSH);
         }
-        printf("ret: %d string: %s", ret, inStr.c_str());
-    }    
-    printf ("exit\n");
+    }
+    printf("exit\n");
 
     return 0;
 }
 
-void errExit (const char* errStr){
+void errExit(const char* errStr) {
     printf("%s\n", errStr);
     exit(EXIT_FAILURE);
 }
 
-int init(){
-    int fd = -1;
-    struct termios tp, save;
-
-    fd = open(path, O_RDWR);
-    if (fd < 0){
-        errExit("Error open");
-    }
-
-    if (tcgetattr(fd, &tp) == -1){
-        errExit("Error tcgetattr");
-    }
-    printf("tcgetattr SUCCESS\n");
-
-    tp.c_lflag &= ~(ICANON | ISIG | IEXTEN | ECHO | ECHOE | ECHOK | ECHOCTL | ECHOKE);
-    tp.c_oflag &= ~(ONLCR | OPOST);
-    tp.c_iflag &= ~(ICRNL | IXON);
-    tp.c_iflag |= IGNBRK;
-
-    if (tcsetattr(fd, TCSAFLUSH, &tp) == -1){
-        errExit("Error tcsetattr");
-    }
-
-    printf("tcsetattr SUCCESS\n");
-    sleep(1);
-    return fd;
-}

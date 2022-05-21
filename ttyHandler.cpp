@@ -41,6 +41,7 @@ void ttyHandler::configTTY() {
 
     ready = true;
     sleep(1);
+    printf("Config SUCCESS\n");
 }
 
 bool ttyHandler::readData(std::string& outStr) {

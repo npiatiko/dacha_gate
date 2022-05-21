@@ -17,8 +17,8 @@ class ttyHandler {
     void configTTY();
     char buf[bufsize + 1];
     ttyHandler(/* args */);
-    ttyHandler(const ttyHandler&);
-    ttyHandler& operator=(ttyHandler&);
+    ttyHandler(const ttyHandler&) = delete;
+    ttyHandler& operator=(ttyHandler&) = delete;
 
    public:
     ~ttyHandler();

@@ -12,6 +12,7 @@ INC_DIR = ./includes/
 
 # Source files and object files
 SRC_FILES = ttyHandler.cpp \
+			callHandler.cpp \
             main.cpp
 
 OBJ_FILES = $(SRC_FILES:.cpp=.o)
@@ -27,12 +28,12 @@ all: obj $(NAME)
 
 obj:
 	@mkdir -p $(OBJ_DIR)
-$(OBJ_DIR)%.o: $(SRC_DIR)%.cpp
+$(OBJ_DIR)%.o: $(SRC_DIR)%.cpp #$(INC_DIR)%.h
 	$(CC) $(FLAGS) -I $(INC_DIR) -o $@ -c $<
 
 # Compiling
 $(NAME): $(OBJ)
-	$(CC) $(OBJ) $(LNK) -lm -o $(NAME)
+	$(CC) $(OBJ) -lm -o $(NAME)
 
 # clean rule
 clean:

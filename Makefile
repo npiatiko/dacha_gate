@@ -15,20 +15,21 @@ SRC_FILES = ttyHandler.cpp \
 			callHandler.cpp \
             main.cpp
 
+INC_FILES = $(INC_DIR)ttyHandler.h \
+			$(INC_DIR)callHandler.h
+
 OBJ_FILES = $(SRC_FILES:.cpp=.o)
 
 # Paths
 SRC = $(addprefix $(SRC_DIR), $(SRC_FILES))
 OBJ = $(addprefix $(OBJ_DIR), $(OBJ_FILES))
 
-# Libft and Minilibx linkers
-
 # all rule
 all: obj $(NAME)
 
 obj:
 	@mkdir -p $(OBJ_DIR)
-$(OBJ_DIR)%.o: $(SRC_DIR)%.cpp #$(INC_DIR)%.h
+$(OBJ_DIR)%.o: $(SRC_DIR)%.cpp $(INC_FILES)
 	$(CC) $(FLAGS) -I $(INC_DIR) -o $@ -c $<
 
 # Compiling

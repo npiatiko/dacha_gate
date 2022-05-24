@@ -2,9 +2,7 @@
 #include <phoneList.h>
 #include <stdio.h>
 #include <ttyHandler.h>
-// extern "C" {
 #include <wiringPi.h>
-// }
 
 #define hangup_cmd "AT+CHUP\r\n"
 

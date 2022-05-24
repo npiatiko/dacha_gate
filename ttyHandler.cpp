@@ -1,4 +1,7 @@
+#include <fcntl.h>
+#include <termios.h>
 #include <ttyHandler.h>
+#include <unistd.h>
 
 ttyHandler::ttyHandler(/* args */) {
     fd = open(devPath.c_str(), O_RDWR);
@@ -72,7 +75,7 @@ bool ttyHandler::sendCommandAck(const std::string& command) {
     int retries = 5;
 
     while (--retries) {
-        printf("func: %s Line: %d\n", __func__, __LINE__);
+        // printf("func: %s Line: %d\n", __func__, __LINE__);
         int wrote = 0;
 
         wrote = write(fd, command.c_str(), command.length());

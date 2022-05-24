@@ -1,8 +1,7 @@
-#include <fcntl.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <ttyHandler.h>
 #include <callHandler.h>
+#include <phoneList.h>
+#include <stdio.h>
+#include <ttyHandler.h>
 
 #define hangup_cmd "AT+CHUP\r\n"
 
@@ -11,11 +10,17 @@ void errExit(const char* errStr);
 int main() {
     ttyHandler& modem = ttyHandler::getModem();
     callHandler call;
+    phoneList list;
     std::string inStr;
 
     while (modem.readData(inStr)) {
         if (call.found(inStr)) {
-            printf("getCallerId: %s\n", call.getCallerId().c_str());
+            std::string callerId = call.getCallerId().c_str();
+            if (list.findPhoneNumber(callerId)) {
+                printf("AUTHORIZED: %s\n", callerId.c_str());
+            }
+
+
             // write(fd, hangup_cmd, sizeof(hangup_cmd));
             // sleep(10);
             // printf("Resuming...\n");

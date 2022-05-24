@@ -1,10 +1,6 @@
 #ifndef TTY_HANDLER
 #define TTY_HANDLER
 
-#include <fcntl.h>
-#include <termios.h>
-#include <unistd.h>
-
 #include <string>
 
 class ttyHandler {

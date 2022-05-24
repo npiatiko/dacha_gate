@@ -7,6 +7,7 @@ bool callHandler::found(const std::string& inStr) {
         // printf("FOUND!!! match.size(): %d: %s\n", match.size(), match[0].str().c_str());
         return true;
     }
+    return false;
 }
 
 std::string callHandler::getCallerId() {

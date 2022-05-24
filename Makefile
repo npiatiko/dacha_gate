@@ -2,7 +2,7 @@
 NAME = dachaGATE
 
 # Compiling flags
-FLAGS = -std=c++14 -fno-exceptions #-Wall -Wextra -Werror
+FLAGS = -std=c++14 -fno-exceptions -L. -lwiringPi#-Wall -Wextra -Werror
 CC = arm-linux-gnueabihf-g++
 
 # Folders
@@ -32,11 +32,11 @@ all: obj $(NAME)
 obj:
 	@mkdir -p $(OBJ_DIR)
 $(OBJ_DIR)%.o: $(SRC_DIR)%.cpp $(INC_FILES)
-	$(CC) $(FLAGS) -I $(INC_DIR) -o $@ -c $<
+	$(CC) -I $(INC_DIR) -o $@ -c $< $(FLAGS)
 
 # Compiling
 $(NAME): $(OBJ)
-	$(CC) $(OBJ) -lm -o $(NAME)
+	$(CC) $(OBJ) -lm -ldl -o $(NAME) $(FLAGS)
 
 # clean rule
 clean:

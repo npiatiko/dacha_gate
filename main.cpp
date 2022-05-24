@@ -2,6 +2,9 @@
 #include <phoneList.h>
 #include <stdio.h>
 #include <ttyHandler.h>
+// extern "C" {
+#include <wiringPi.h>
+// }
 
 #define hangup_cmd "AT+CHUP\r\n"
 
@@ -12,6 +15,7 @@ int main() {
     callHandler call;
     phoneList list;
     std::string inStr;
+    wiringPiSetupGpio();
 
     while (modem.readData(inStr)) {
         if (call.found(inStr)) {
@@ -19,7 +23,6 @@ int main() {
             if (list.findPhoneNumber(callerId)) {
                 printf("AUTHORIZED: %s\n", callerId.c_str());
             }
-
 
             // write(fd, hangup_cmd, sizeof(hangup_cmd));
             // sleep(10);

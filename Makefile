@@ -14,11 +14,13 @@ INC_DIR = ./includes/
 SRC_FILES = ttyHandler.cpp \
 			callHandler.cpp \
 			phoneList.cpp \
+			gateController.cpp \
             main.cpp
 
 INC_FILES = $(INC_DIR)ttyHandler.h \
 			$(INC_DIR)callHandler.h \
-			$(INC_DIR)phoneList.h
+			$(INC_DIR)phoneList.h \
+			$(INC_DIR)gateController.h
 
 OBJ_FILES = $(SRC_FILES:.cpp=.o)
 

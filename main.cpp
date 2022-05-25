@@ -1,25 +1,29 @@
 #include <callHandler.h>
+#include <gateController.h>
 #include <phoneList.h>
 #include <stdio.h>
 #include <ttyHandler.h>
-#include <wiringPi.h>
-
-#define hangup_cmd "AT+CHUP\r\n"
+#include <unistd.h>
 
 void errExit(const char* errStr);
 
 int main() {
     ttyHandler& modem = ttyHandler::getModem();
+    gateController& gate = gateController::getController();
     callHandler call;
     phoneList list;
     std::string inStr;
-    wiringPiSetupGpio();
 
     while (modem.readData(inStr)) {
         if (call.found(inStr)) {
-            std::string callerId = call.getCallerId().c_str();
+            modem.hangUp();
+            std::string callerId = call.getCallerId();
             if (list.findPhoneNumber(callerId)) {
                 printf("AUTHORIZED: %s\n", callerId.c_str());
+                gate.openGate();
+                sleep(5);
+                gate.closeGate();
+                modem.flush();
             }
 
             // write(fd, hangup_cmd, sizeof(hangup_cmd));

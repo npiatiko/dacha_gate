@@ -3,8 +3,9 @@
 #include <ttyHandler.h>
 #include <unistd.h>
 
-ttyHandler::ttyHandler(/* args */) {
+ttyHandler::ttyHandler() {
     fd = open(devPath.c_str(), O_RDWR);
+
     if (fd < 0) {
         printf("Error open\n");
     } else {
@@ -35,7 +36,10 @@ void ttyHandler::configTTY() {
         return;
     }
 
+    sleep(1);
     printf("tcsetattr SUCCESS\n");
+
+    flush();
 
     if (!sendCommandAck(configTty_cmd)){
         printf("Config modem failure...\n");
@@ -43,7 +47,6 @@ void ttyHandler::configTTY() {
     }
 
     ready = true;
-    sleep(1);
     printf("Config SUCCESS\n");
 }
 
@@ -108,4 +111,12 @@ bool ttyHandler::sendCommand(const std::string& command) {
     }
 
     return result;
+}
+
+void ttyHandler::hangUp() {
+    sendCommandAck(hangup_cmd);
+}
+
+void ttyHandler::flush(){
+    tcflush(fd, TCIOFLUSH);
 }

@@ -4,13 +4,18 @@
 
 gateController::gateController() {
     wiringPiSetupGpio();
-    pinMode(0, OUTPUT);
-    pinMode(1, OUTPUT);
-    pinMode(21, INPUT);
-    pullUpDnControl(21, PUD_UP);
-    digitalWrite(0, HIGH);
-    digitalWrite(1, HIGH);
-    wiringPiISR(21, INT_EDGE_BOTH, intrptHndlr);
+    pinMode(forwardPIN, OUTPUT);
+    pinMode(reversePIN, OUTPUT);
+    MotorControl(MotorMode::OFF);
+    pinMode(irSensorPIN, INPUT);
+    pinMode(closeSensorPIN, INPUT);
+    pinMode(openSensorPIN, INPUT);
+    pullUpDnControl(irSensorPIN, PUD_UP);
+    pullUpDnControl(closeSensorPIN, PUD_UP);
+    pullUpDnControl(openSensorPIN, PUD_UP);
+    wiringPiISR(irSensorPIN, INT_EDGE_BOTH, IrSensorIntrpt);
+    wiringPiISR(closeSensorPIN, INT_EDGE_BOTH, CloseSensorIntrpt);
+    wiringPiISR(openSensorPIN, INT_EDGE_BOTH, OpenSensorIntrpt);
 }
 
 gateController& gateController::getController() {
@@ -19,18 +24,31 @@ gateController& gateController::getController() {
     return controller;
 }
 
-void gateController::openGate(){
-    digitalWrite(0, HIGH);
-    digitalWrite(1, HIGH);
-    digitalWrite(1, LOW);
+void gateController::openGate() {
+    MotorControl(MotorMode::FORWARD);
 }
 
-void gateController::closeGate(){
-    digitalWrite(0, HIGH);
-    digitalWrite(1, HIGH);
-    digitalWrite(0, LOW);
+void gateController::closeGate() {
+    MotorControl(MotorMode::REVERSE);
 }
 
-void gateController::intrptHndlr(){
-    printf("Interupt registered PIN21 state: %d\n", digitalRead(21));
+void gateController::IrSensorIntrpt() {
+    printf("%s: %d\n", __func__, digitalRead(irSensorPIN));
+}
+
+void gateController::CloseSensorIntrpt() {
+    printf("%s: %d\n", __func__, digitalRead(closeSensorPIN));
+}
+
+void gateController::OpenSensorIntrpt() {
+    printf("%s: %d\n", __func__, digitalRead(openSensorPIN));
+}
+
+void gateController::MotorControl(const MotorMode mode) {
+    const u_MotorMode _mode(mode);
+
+    digitalWrite(forwardPIN, HIGH);
+    digitalWrite(reversePIN, HIGH);
+    digitalWrite(forwardPIN, _mode._forward);
+    digitalWrite(reversePIN, _mode._reverse);
 }

@@ -8,6 +8,7 @@
 void errExit(const char* errStr);
 
 int main() {
+    setvbuf(stdout, NULL, _IOLBF, BUFSIZ);
     ttyHandler& modem = ttyHandler::getModem();
     gateController& gate = gateController::getController();
     callHandler call;

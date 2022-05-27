@@ -5,7 +5,7 @@
 
 class phoneList {
    private:
-    const std::string listFile = "./accessList.txt";
+    const std::string listFile = "/home/pi/accessList.txt";
     static std::set<std::string> authorizedUsers;
     bool ready = false;
 

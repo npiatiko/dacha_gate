@@ -1,0 +1,16 @@
+[Unit]
+    Description=Gate controller service
+[Service]
+    StandardOutput=journal
+    StandardError=inherit
+    #TTYPath=/dev/pts/0
+    ExecStart=/home/pi/dachaGATE
+    Type=simple
+    KillMode=process
+    #SyslogIdentifier=gate-controller
+    #SyslogFacility=daemon
+    #SyslogLevel=notice
+    Restart=always
+    RestartSec=60s
+[Install]
+    WantedBy=multi-user.target

@@ -17,25 +17,21 @@ int main() {
 
     while (modem.readData(inStr)) {
         if (call.found(inStr)) {
-            modem.hangUp();
             std::string callerId = call.getCallerId();
+
+            printf("Incoming call: %s...\n", callerId.c_str());
+            modem.hangUp();
             if (list.findPhoneNumber(callerId)) {
-                printf("AUTHORIZED: %s\n", callerId.c_str());
+                printf("%s: AUTHORIZED, opening gate...\n", callerId.c_str());
                 gate.openGate();
                 sleep(5);
                 gate.closeGate();
                 modem.flush();
             }
-
-            // write(fd, hangup_cmd, sizeof(hangup_cmd));
-            // sleep(10);
-            // printf("Resuming...\n");
-
-            // tcflush(fd, TCIOFLUSH);
         }
     }
-    printf("exit\n");
 
+    printf("Ret 0, exit\n");
     return 0;
 }
 

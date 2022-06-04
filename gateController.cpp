@@ -2,6 +2,12 @@
 #include <stdio.h>
 #include <wiringPi.h>
 
+#include <chrono>
+
+std::mutex gateController::mLock;
+std::condition_variable gateController::mCv;
+std::atomic<State> gateController::mState;
+
 gateController::gateController() {
     wiringPiSetupGpio();
     pinMode(forwardPIN, OUTPUT);
@@ -13,7 +19,7 @@ gateController::gateController() {
     pullUpDnControl(irSensorPIN, PUD_UP);
     pullUpDnControl(closeSensorPIN, PUD_UP);
     pullUpDnControl(openSensorPIN, PUD_UP);
-    wiringPiISR(irSensorPIN, INT_EDGE_BOTH, IrSensorIntrpt);
+    wiringPiISR(irSensorPIN, INT_EDGE_FALLING, IrSensorIntrpt);
     wiringPiISR(closeSensorPIN, INT_EDGE_BOTH, CloseSensorIntrpt);
     wiringPiISR(openSensorPIN, INT_EDGE_BOTH, OpenSensorIntrpt);
 }
@@ -25,23 +31,56 @@ gateController& gateController::getController() {
 }
 
 void gateController::openGate() {
+    std::unique_lock<std::mutex> lk(mLock);
+
     MotorControl(MotorMode::FORWARD);
+    mCv.wait(lk, [&] { return mState == State::OPENED; });
 }
 
 void gateController::closeGate() {
-    MotorControl(MotorMode::REVERSE);
+    std::unique_lock<std::mutex> lk(mLock);
+    int irSensState = 0;
+
+    while (mState != State::CLOSED) {
+        irSensState = digitalRead(irSensorPIN);
+        if (irSensState == HIGH) {
+            MotorControl(MotorMode::REVERSE);
+        }
+        mCv.wait_for(lk, std::chrono::seconds(10), [&] { return mState == State::CLOSED; });
+    }
 }
 
 void gateController::IrSensorIntrpt() {
     printf("%s: %d\n", __func__, digitalRead(irSensorPIN));
+    if (mState == State::CLOSING) {
+        MotorControl(MotorMode::FORWARD);
+    }
 }
 
 void gateController::CloseSensorIntrpt() {
-    printf("%s: %d\n", __func__, digitalRead(closeSensorPIN));
+    int pinState = digitalRead(closeSensorPIN);
+
+    printf("%s: %d\n", __func__, pinState);
+    if (pinState == HIGH) {
+        mState = State::OPENING;
+    } else {
+        MotorControl(MotorMode::OFF);
+        mState = State::CLOSED;
+        mCv.notify_all();
+    }
 }
 
 void gateController::OpenSensorIntrpt() {
-    printf("%s: %d\n", __func__, digitalRead(openSensorPIN));
+    int pinState = digitalRead(openSensorPIN);
+
+    printf("%s: %d\n", __func__, pinState);
+    if (pinState == HIGH) {
+        mState = State::CLOSING;
+    } else {
+        MotorControl(MotorMode::OFF);
+        mState = State::OPENED;
+        mCv.notify_all();
+    }
 }
 
 void gateController::MotorControl(const MotorMode mode) {

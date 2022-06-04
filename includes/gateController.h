@@ -1,4 +1,7 @@
 #include <cstdint>
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
 
 enum class State : uint8_t {
     CLOSED,
@@ -9,9 +12,9 @@ enum class State : uint8_t {
 };
 
 enum class MotorMode : uint8_t {
-    OFF = 0u,
-    FORWARD,
-    REVERSE
+    FORWARD = 1u,
+    REVERSE,
+    OFF
 };
 
 union u_MotorMode {
@@ -31,12 +34,15 @@ class gateController {
     static constexpr int closeSensorPIN = 5;
     static constexpr int openSensorPIN = 27;
 
-    State mState;
+    static std::mutex mLock;
+    static std::condition_variable mCv;
+
+    static std::atomic<State> mState;
 
     gateController(const gateController&) = delete;
     gateController& operator=(gateController&) = delete;
     gateController();
-    void MotorControl(const MotorMode mode);
+    static void MotorControl(const MotorMode mode);
 
    public:
     static gateController& getController();

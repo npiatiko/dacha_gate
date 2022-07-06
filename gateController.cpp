@@ -65,8 +65,8 @@ void gateController::IrSensorIntrpt() {
             if (mState.load() == State::OPENED) {
                 MotorControl(MotorMode::OFF);
             } else if (mState.load() == State::CLOSING) {
-        MotorControl(MotorMode::FORWARD);
-    }
+                MotorControl(MotorMode::FORWARD);
+            }
         } else {
             printf("Ignoring Interrupt!!\n");
         }

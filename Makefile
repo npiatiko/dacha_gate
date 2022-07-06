@@ -1,14 +1,19 @@
 # Name of the program
 NAME = dachaGATE
 
-# Compiling flags
-FLAGS = -std=c++14 -fno-exceptions -lrt -lpthread -L. -lwiringPi# -Wall -Wextra -Werror
-CC = arm-linux-gnueabihf-g++
-
 # Folders
 SRC_DIR = ./
 OBJ_DIR = ./obj/
 INC_DIR = ./includes/
+LIB_DIR = ./lib
+
+# Compiling flags
+FLAGS = -std=c++14 -fno-exceptions -lrt -lpthread -L$(LIB_DIR) \
+		-lwiringPi -Wall -Wextra -Werror -Weffc++ -Woverloaded-virtual \
+		-Wctor-dtor-privacy -Wnon-virtual-dtor -Wold-style-cast \
+		-Wconversion -Wsign-conversion -Winit-self \
+		-Wunreachable-code# -ggdb 
+CC = arm-linux-gnueabihf-g++
 
 # Source files and object files
 SRC_FILES = ttyHandler.cpp \

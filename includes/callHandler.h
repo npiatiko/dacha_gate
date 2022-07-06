@@ -12,7 +12,7 @@ class callHandler {
    public:
     bool found(const std::string& inStr);
     std::string getCallerId();
-    callHandler() = default;
+    callHandler();
     ~callHandler() = default;
     
 };

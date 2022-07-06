@@ -26,10 +26,10 @@ void ttyHandler::configTTY() {
     }
     printf("tcgetattr SUCCESS\n");
 
-    tp.c_lflag &= ~(ICANON | ISIG | IEXTEN | ECHO | ECHOE | ECHOK | ECHOCTL | ECHOKE);
-    tp.c_oflag &= ~(ONLCR | OPOST);
-    tp.c_iflag &= ~(ICRNL | IXON);
-    tp.c_iflag |= IGNBRK;
+    tp.c_lflag &= static_cast<tcflag_t>(~(ICANON | ISIG | IEXTEN | ECHO | ECHOE | ECHOK | ECHOCTL | ECHOKE));
+    tp.c_oflag &= static_cast<tcflag_t>(~(ONLCR | OPOST));
+    tp.c_iflag &= static_cast<tcflag_t>(~(ICRNL | IXON));
+    tp.c_iflag |= static_cast<tcflag_t>(IGNBRK);
 
     if (tcsetattr(fd, TCSAFLUSH, &tp) == -1) {
         printf("Error tcsetattr\n");
@@ -41,7 +41,7 @@ void ttyHandler::configTTY() {
 
     flush();
 
-    if (!sendCommandAck(configTty_cmd)){
+    if (!sendCommandAck(configTty_cmd)) {
         printf("Config modem failure...\n");
         return;
     }
@@ -79,11 +79,11 @@ bool ttyHandler::sendCommandAck(const std::string& command) {
 
     while (--retries) {
         // printf("func: %s Line: %d\n", __func__, __LINE__);
-        int wrote = 0;
+        ssize_t wrote = 0;
 
         wrote = write(fd, command.c_str(), command.length());
         sleep(1);
-        if (wrote == command.length()) {
+        if (wrote == static_cast<ssize_t>(command.length())) {
             std::string ackMsg;
 
             if (readData(ackMsg) && ackMsg.find("OK") != std::string::npos) {
@@ -101,10 +101,10 @@ bool ttyHandler::sendCommand(const std::string& command) {
     int retries = 5;
 
     while (--retries) {
-        int wrote = 0;
+        ssize_t wrote = 0;
 
         wrote = write(fd, command.c_str(), command.length());
-        if (wrote == command.length()) {
+        if (wrote == static_cast<ssize_t>(command.length())) {
             result = true;
             break;
         }
@@ -117,6 +117,6 @@ void ttyHandler::hangUp() {
     sendCommandAck(hangup_cmd);
 }
 
-void ttyHandler::flush(){
+void ttyHandler::flush() {
     tcflush(fd, TCIOFLUSH);
 }

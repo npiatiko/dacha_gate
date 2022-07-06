@@ -40,16 +40,16 @@ class gateController {
 
     static std::atomic<State> mState;
 
-    gateController(const gateController&) = delete;
-    gateController& operator=(gateController&) = delete;
-    gateController();
     static void MotorControl(const MotorMode mode);
-
-   public:
-    static gateController& getController();
     static void IrSensorIntrpt();
     static void CloseSensorIntrpt();
     static void OpenSensorIntrpt();
+    gateController(const gateController&) = delete;
+    gateController& operator=(gateController&) = delete;
+    gateController();
+
+   public:
+    static gateController& getController();
     void openGate();
     void closeGate();
 

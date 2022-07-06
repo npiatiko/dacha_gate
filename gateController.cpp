@@ -1,8 +1,11 @@
 #include <gateController.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <wiringPi.h>
 
 #include <chrono>
+#include <iostream>
+#include <thread>
 
 std::mutex gateController::mLock;
 std::condition_variable gateController::mCv;
@@ -34,51 +37,71 @@ void gateController::openGate() {
     std::unique_lock<std::mutex> lk(mLock);
 
     MotorControl(MotorMode::FORWARD);
-    mCv.wait(lk, [&] { return mState == State::OPENED; });
+    mCv.wait(lk, [&] { return mState.load() == State::OPENED; });
 }
 
 void gateController::closeGate() {
     std::unique_lock<std::mutex> lk(mLock);
     int irSensState = 0;
 
-    while (mState != State::CLOSED) {
+    while (mState.load() != State::CLOSED) {
         irSensState = digitalRead(irSensorPIN);
         if (irSensState == HIGH) {
             MotorControl(MotorMode::REVERSE);
         }
-        mCv.wait_for(lk, std::chrono::seconds(10), [&] { return mState == State::CLOSED; });
+        mCv.wait_for(lk, std::chrono::seconds(10), [&] { return mState.load() == State::CLOSED; });
     }
 }
 
 void gateController::IrSensorIntrpt() {
-    printf("%s: %d\n", __func__, digitalRead(irSensorPIN));
-    if (mState == State::CLOSING) {
+    int pinState = digitalRead(irSensorPIN);
+    std::thread irThread([&]() {
+        static std::mutex IrLockMtx;
+        std::unique_lock<std::mutex> IrLocker(IrLockMtx, std::defer_lock);
+
+        if (IrLocker.try_lock()) {
+            std::unique_lock<std::mutex> lk(mLock);
+
+            if (mState.load() == State::OPENED) {
+                MotorControl(MotorMode::OFF);
+            } else if (mState.load() == State::CLOSING) {
         MotorControl(MotorMode::FORWARD);
     }
+        } else {
+            printf("Ignoring Interrupt!!\n");
+        }
+    });
+
+    irThread.detach();
+    printf("%s: %d\n", __func__, pinState);
 }
 
 void gateController::CloseSensorIntrpt() {
+    std::unique_lock<std::mutex> lk(mLock);
+
     int pinState = digitalRead(closeSensorPIN);
 
     printf("%s: %d\n", __func__, pinState);
     if (pinState == HIGH) {
-        mState = State::OPENING;
+        mState.store(State::OPENING);
     } else {
         MotorControl(MotorMode::OFF);
-        mState = State::CLOSED;
+        mState.store(State::CLOSED);
         mCv.notify_all();
     }
 }
 
 void gateController::OpenSensorIntrpt() {
+    std::unique_lock<std::mutex> lk(mLock);
+
     int pinState = digitalRead(openSensorPIN);
 
     printf("%s: %d\n", __func__, pinState);
     if (pinState == HIGH) {
-        mState = State::CLOSING;
+        mState.store(State::CLOSING);
     } else {
         MotorControl(MotorMode::OFF);
-        mState = State::OPENED;
+        mState.store(State::OPENED);
         mCv.notify_all();
     }
 }

@@ -88,6 +88,7 @@ void gateController::MotorControl(const MotorMode mode) {
 
     digitalWrite(forwardPIN, HIGH);
     digitalWrite(reversePIN, HIGH);
+    digitalWrite(motorBrakePIN, ~(_mode._forward ^ _mode._reverse));
     digitalWrite(forwardPIN, _mode._forward);
     digitalWrite(reversePIN, _mode._reverse);
 }

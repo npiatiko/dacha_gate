@@ -30,6 +30,7 @@ class gateController {
    private:
     static constexpr int forwardPIN = 1;
     static constexpr int reversePIN = 0;
+    static constexpr int motorBrakePIN = 2;
     static constexpr int irSensorPIN = 21;
     static constexpr int closeSensorPIN = 5;
     static constexpr int openSensorPIN = 27;
